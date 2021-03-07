@@ -1,20 +1,11 @@
 import React, {useState, useEffect, useRef} from 'react';
+import axios from 'axios';
 import {nanoid} from 'nanoid';
 import Todo from './components/Todo';
 import Form from './components/Form';
 import FilterButton from './components/FilterButton';
 import {usePrevious} from './components/Todo';
 
-// const filter = (keyword, todos) => {
-//   switch (keyword) {
-//     case 'all':
-//       return todos;
-//     case 'active':
-//       return todos.filter(todo => todo.completed === false);
-//     case 'completed':
-//       return todos.filter(todo => todo.completed === true);
-//   }
-// }
 const FILTER_MAP = {
   All: () => true,
   Active: todo => !todo.completed,
@@ -23,11 +14,23 @@ const FILTER_MAP = {
 
 const FILTER_NAMES = Object.keys(FILTER_MAP);
 
-function App({data}) {
-  const [todos, setTodos] = useState(data);
+//=============App component================
+function App() {
+  const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState('All');
 
-  // const filteredTodos = filter(keyword, todos);
+  // get data
+  useEffect(() => {
+    updateList();
+  }, []);
+
+  // helper function
+  const updateList = () => {
+    axios
+      .get('http://localhost:8000/api/todos')
+      .then(res => setTodos(res.data))
+      .catch(err => console.log(err));
+  }
 
   // list of filter buttons
   const filterButtons = FILTER_NAMES.map(name => (
@@ -35,31 +38,34 @@ function App({data}) {
   ));
 
   const addTask = (name) => {
-    const id = `todo-${nanoid()}`;
-    setTodos([...todos, {id, name, completed: false}]);
+    axios
+      .post('http://localhost:8000/api/todos/', {name})
+      .then(res => updateList())
+      .catch(err => console.log(err));
   }
 
-  const handleOnCheckChange = (targetTodo) => {
-    const newTodos = todos.map(todo => todo.id === targetTodo.id ? {...todo, completed: !todo.completed} : todo);
-    console.log(newTodos);
+  const handleOnCheckChange = (id) => {
+    const todo = todos.find(todo => todo.id === id);
+    const currentCompleted = todo.completed;
+    axios
+      .patch(`http://localhost:8000/api/todos/${id}/`, {completed: !currentCompleted})
+      .then(res => updateList())
+      .catch(err => console.log(err));
   }
 
   const handleOnClickDelete = (id) => {
-    const newTodos = todos.filter(todo => todo.id !== id);
-
-    setTodos(newTodos);
+    axios
+      .delete(`http://localhost:8000/api/todos/${id}`)
+      .then(res => updateList())
+      .catch(err => console.log(err));
   }
 
   const handleOnClickSave = (id, newName) => {
-    const newTodos = todos.map(todo => todo.id === id ? {...todo, name: newName} : todo);
-
-    setTodos(newTodos);
-    console.log(newTodos);
+    axios
+      .patch(`http://localhost:8000/api/todos/${id}/`, {name: newName})
+      .then(res => updateList())
+      .catch(err => console.log(err));
   }
-
-  // const handleOnClickFilter = (name) => {
-  //   setFilter(name);
-  // }
 
   const listHeadingRef = useRef(null);
   const prevTodosLength = usePrevious(todos.length);
@@ -84,7 +90,7 @@ function App({data}) {
         className="todo-list stack-large stack-exception"
         aria-labelledby="list-heading"
       >
-        {todos.filter(FILTER_MAP[filter]).map(todo => <Todo key={todo.id} id={todo.id} name={todo.name} completed={todo.completed} onCheckChange={() => handleOnCheckChange(todo)} onClickDelete={handleOnClickDelete} onClickSave={handleOnClickSave} />)}
+        {todos.filter(FILTER_MAP[filter]).map(todo => <Todo key={todo.id} id={todo.id} name={todo.name} completed={todo.completed} onCheckChange={handleOnCheckChange} onClickDelete={handleOnClickDelete} onClickSave={handleOnClickSave} />)}
       </ul>
     </div>
   );
