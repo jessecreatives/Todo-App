@@ -65,7 +65,7 @@ function App({data}) {
   const prevTodosLength = usePrevious(todos.length);
 
   useEffect(() => {
-    if (todos.length - prevTodosLength === -1) {
+    if (todos.length - <prevTodosLength></prevTodosLength> === -1) {
       listHeadingRef.current.focus();
     }
   }, [todos.length, prevTodosLength]);
