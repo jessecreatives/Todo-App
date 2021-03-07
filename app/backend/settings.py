@@ -129,3 +129,6 @@ CORS_ORIGIN_WHITELIST = [
     'https://localhost:8000',
     'https://jessecreatives.com',
 ]
+
+import django_heroku
+django_heroku.settings(locals())
