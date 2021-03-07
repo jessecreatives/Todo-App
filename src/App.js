@@ -3,6 +3,7 @@ import {nanoid} from 'nanoid';
 import Todo from './components/Todo';
 import Form from './components/Form';
 import FilterButton from './components/FilterButton';
+import {usePrevious} from './components/Todo';
 
 // const filter = (keyword, todos) => {
 //   switch (keyword) {
@@ -23,20 +24,6 @@ const FILTER_MAP = {
 const FILTER_NAMES = Object.keys(FILTER_MAP);
 
 function App({data}) {
-  // test
-  console.log('begin test');
-  
-  const [count, setCount] = useState(0);
-
-  const prevCountRef = useRef(count);
-  useEffect(() => {
-    prevCountRef.current = count;
-    console.log('side effect');
-  });
-  const prevCount = prevCountRef.current;
-  // end of test
-
-
   const [todos, setTodos] = useState(data);
   const [filter, setFilter] = useState('All');
 
@@ -74,18 +61,23 @@ function App({data}) {
   //   setFilter(name);
   // }
 
+  const listHeadingRef = useRef(null);
+  const prevTodosLength = usePrevious(todos.length);
+
+  useEffect(() => {
+    if (todos.length - prevTodosLength === -1) {
+      listHeadingRef.current.focus();
+    }
+  }, [todos.length, prevTodosLength]);
+
   return (
     <div className="todoapp stack-large">
-      {/* test */}
-      <h1>Now: {count}, before: {prevCount}</h1>
-      <button type="button" onClick={() => setCount(count+1)}>Add</button>
-      {/* end of test */}
       <h1>HandyTodo</h1>
       <Form addTask={addTask} />
       <div className="filters btn-group stack-exception">
         {filterButtons}
       </div>
-      <h2 id="list-heading">
+      <h2 id="list-heading" tabIndex="-1" ref={listHeadingRef}>
         {todos.length > 1 ? `${todos.length} tasks remaining` : `${todos.length} task remaining`}
       </h2>
       <ul
