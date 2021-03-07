@@ -12,6 +12,8 @@ django-cors-headers = "*"
 gunicorn = "*"
 python-dotenv = "*"
 django-heroku = "*"
+dj-database-url = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.9"

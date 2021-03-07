@@ -6,6 +6,9 @@ import Form from './components/Form';
 import FilterButton from './components/FilterButton';
 import {usePrevious} from './components/Todo';
 
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+
 const FILTER_MAP = {
   All: () => true,
   Active: todo => !todo.completed,
